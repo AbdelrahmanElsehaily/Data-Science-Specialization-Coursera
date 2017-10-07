@@ -1,0 +1,82 @@
+---
+title: "Regresion Models Project"
+author: "Abdelrahman Elsehaily"
+date: "October 7, 2017"
+output: pdf_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=3, fig.height=2) 
+```
+## 1.Introduction
+This is the project of the Regression models course, the goal of the project is to explore the relationship between a set of variables and miles per gallon (MPG) (outcome) in the motor cars dataset. 
+
+## 2. Analysis
+### 2.1.Reformatting the data
+After reading the documentaion I think this column shoud be factors
+```{r}
+data("mtcars")
+carsdata=mtcars
+#assign character values to am column so it doesn't affect the regression models and be more readable
+carsdata$am<-ifelse(mtcars$am==1,"manual","auto")
+carsdata$gear<-as.factor(carsdata$gear)
+carsdata$cyl<-as.factor(carsdata$cyl)
+```
+### 2.2.Is the difference between maual and automatice is significant?
+As seen in figure 2 automatic has  mpg lower values than manual so we want to check if that difference is significant.  
+```{r}
+t.test(mpg~am,data = carsdata)
+```
+The p-value is lower than 0.0025 (tow-sided test) so there is a significant difference in the mean of the two groups.
+### 2.3.Modeling
+First using am only implement linear regression model
+```{r}
+amModel<-lm(mpg~ am,data=carsdata)
+summary(amModel)
+```
+The adjuster R-squared is 0.3385 which mean that am could only explain 33.8 % of the variance
+
+## Nested Models
+It is obvious that am only is not a good way to predict the mpg, so we should add another variables to our model but that should depend on the correlation between the mpg and the other variables (appendix 2)
+
+### Comparing Models  
+The weight varible has the highest (negative) correlation with mpg(figure 3) so we gonna add this variable to our model and that will be our first model.  
+The second will use all the variables that is highly correlated to mpg.  
+The third will use all the variables in our dataset.  
+```{r}
+wtModel<-lm(mpg~am+wt,data = carsdata)
+allCorModel<-lm(mpg~ am+cyl+disp+wt,data=mtcars)
+allVarModel<-lm(mpg~ .,data=mtcars)
+anova(amModel,wtModel,allCorModel,allVarModel)
+```
+The Residual Sum Squared (RSS) has decreased from 720 to 278  in the first one and as **p-value<0.05** this model is **significantly** better than the one with the variable am only.  
+In the second model the Residual saured error has decreased from 278.3 to 188.43, the p-value is lower than 0.05 so this model is significantly better than the one with the weight,in the third model the residuals has decreases but the p-value is **not significant** at all so I think using all variables may represent an overfitted model.
+
+
+## Appendix
+
+### Appendix 1
+```{r fig.height=5}
+library(ggplot2)
+ggplot(data = carsdata,aes(x=as.factor(am),y=mpg,fill=as.factor(am)))+geom_boxplot()
+```
+### Appendix 2
+```{r}
+pairs(mtcars)
+```
+**Correlation**
+```{r}
+cor(mtcars$mpg,mtcars)
+```
+### Appendix 3
+The model with am only.
+```{r}
+par(mfrow=c(2,2))
+plot(amModel)
+```
+
+### Appendix 4  
+The model with the highly correlated variables
+```{r}
+par(mfrow=c(2,2))
+plot(allCorModel)
+```

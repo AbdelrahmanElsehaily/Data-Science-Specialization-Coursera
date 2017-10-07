@@ -1,0 +1,86 @@
+---
+title: "Reproducabl Research Final Project"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE,fig.width=6, fig.height=3) 
+
+```
+
+# Analyzing the effects of weather events on United states
+
+## 1.synopsis 
+
+This project is a par Reproducable Research course which is a part of the Data Science Specialization on Coursera, The basic goal of this assignment is to explore the [NOAA Storm Database](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) and determining which events has the most effect on health and economic, the data is collected from 1950 and end in November 2011
+the analysis doesn't take into the consideration the dates or the states but the total effects on health, property and crops caused by the different weather events on United States.
+
+
+## 2. Data Processing
+
+### Importing dpylr for wrangling the data, and ggplot2 for visualization
+```{r}
+library("dplyr")
+library("ggplot2")
+library("gridExtra")
+```
+#### Reading data
+```{r cache=TRUE}
+rawdata=read.csv("repdata%2Fdata%2FStormData.csv.bz2")
+head(rawdata,3)
+```
+### Dealing with the eponents 
+from reading the documentation I figured out that the coulumn "PROPDMGEXP", "CROPDMGEXP" is eponent for the "PROPDMG", "CROPDMG" wicht represents the damages in money loss
+```{r}
+levels(rawdata$PROPDMGEXP)
+```
+```{r}
+levels(rawdata$CROPDMGEXP)
+
+```
+
+creating a new data frames that represnt the exponents with the real numbers and merging them to the data 
+```{r cache=TRUE}
+propdmgdf=data.frame(PROPDMGEXP=levels(rawdata$PROPDMGEXP),PROPDMGEXPNUM= c(0,0,0,0,1,1,10,100,1000,1e+05,1e+06,1e+07,1e+08,1e+09,100,100,1000,1e+06,1e+06))
+cropdf=data.frame(CROPDMGEXP=levels(rawdata$CROPDMGEXP),CROPDMGEXPNUM= c(1,0,1,10,1e+09,1000,1000,1e+06,1e+06))
+numericdf=merge(rawdata,propdmgdf,by="PROPDMGEXP")
+numericdf=merge(numericdf,cropdf,by="CROPDMGEXP")
+```
+Creating new cloumns represents the multiblcations of the damages and the exponents
+```{r}
+numericdf=numericdf%>%mutate(TOTALPROPDMG=PROPDMGEXPNUM*PROPDMG,TOTALCROPDMG=CROPDMGEXPNUM*CROPDMG)
+```
+### getting the required data frame
+first selected the required coulmns only for the results part, then grouped by event type to get the total (injuries, fatalities, crop damages, Property damages)
+```{r}
+analysisdata=select(numericdf,
+                  EVTYPE,TOTALPROPDMG,TOTALCROPDMG,INJURIES,FATALITIES)%>%
+                  group_by(EVTYPE)%>%
+                  summarise(TOTALPROPDMG=sum(TOTALPROPDMG),
+                            TOTALCROPDMG=sum(TOTALCROPDMG),
+                            INJURIES=sum(INJURIES),
+                            FATALITIES=sum(FATALITIES))
+```
+## 2.Results
+
+### Health Effect
+getting the first ten event types with highest deaths and highest injuries in distinct plots
+```{r}
+p1<-ggplot(data=slice(arrange(analysisdata,desc(FATALITIES)),1:10),aes(x=reorder(EVTYPE,-FATALITIES),y=FATALITIES))+geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("")+ggtitle("Highsest Events FATALITIES")
+p2<-ggplot(data=slice(arrange(analysisdata,desc(INJURIES)),1:10),aes(x=reorder(EVTYPE,-INJURIES),y=INJURIES))+geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("")+ggtitle("Highsest Events INJURIES")
+grid.arrange(p1, p2, ncol=2)
+```
+
+### Econmic Effect
+```{r}
+p3<-ggplot(data=slice(arrange(analysisdata,desc(FATALITIES)),1:10),aes(x=reorder(EVTYPE,-FATALITIES),y=FATALITIES))+geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("")+ggtitle("Highsest Events FATALITIES")
+p4<-ggplot(data=slice(arrange(analysisdata,desc(INJURIES)),1:10),aes(x=reorder(EVTYPE,-INJURIES),y=INJURIES))+geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("")+ggtitle("Highsest Events INJURIES")
+grid.arrange(p3, p4, ncol=2)
+```
+
+## Conclusion
+
+It seemd that Tornade has the highest effect on either the health and economics, also the high death doesn't imply high injuries and vise versa.

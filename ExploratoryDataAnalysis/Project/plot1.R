@@ -1,0 +1,5 @@
+NEI <- readRDS("exdata%2Fdata%2FNEI_data/summarySCC_PM25.rds")
+annualSum=tapply(NEI$Emissions,NEI$year,sum)
+png("plot1.png")
+barplot(annualSum,xlab = "years", ylab = "Total Emmissions")
+dev.off()

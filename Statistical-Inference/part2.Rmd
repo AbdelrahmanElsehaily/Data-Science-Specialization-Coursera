@@ -1,0 +1,81 @@
+---
+title: "Statistical Inference project part 2"
+author: "Abdelrahman Elsehaily"
+date: "September 29, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1.Introduction
+
+The goal of this document is to provide basic summary of "ToothGrowth" dataset  in R and usin t-test and confidence intervals try to answer two main questions:  
+  1.Is there significant difference in the lenght between the two delivery methods?  
+  2.Is there significant difference in the lenght between different doses?  
+
+---
+
+## 2.Analysis
+
+Loading ggplot for plotting the data
+```{r}
+library("ggplot2")
+```
+
+### 2.1.Summary of the data
+The column of the dataset
+```{r}
+summary(ToothGrowth)
+```
+The first rows of the data set
+```{r}
+head(ToothGrowth)
+```
+Using boxplot I plotted the dataset as y-axis is the lenght of odontoblasts and x-axis is the doses.
+```{r}
+ggplot(data=ToothGrowth,aes(x=as.factor(dose),y=len,fill=supp))+geom_boxplot()+ggtitle("Dose versus the lenght in various delivery methods")+xlab("Dose")+ylab("length of odontoblasts")
+```
+The plot shows that the length is higher when using orange juice(OJ) as the delivery method that when using th ascorbic acid (VC), and obviously the lenght increase when the dose increase.
+
+##2.2.what is the effect of supply method(orange juice vs  ascorbic acid)? 
+We wanna see if there is significant difference between the two delivery methods(supp) so our hypothesis I think is the following:  
+  H0: M0-Ma=0  
+  Ha: M0-Ma!=0  
+as M0,Ma are the means of the deliveries method.
+```{r}
+t.test(len~supp,data=ToothGrowth)
+
+```
+
+The p-value is not significant as the p-value >0.025 (considering the two sided)
+We fail to reject the null hypothesis H0.
+
+## 2.3.Does the dose affet the length?
+We wanna see if there is significant difference between the different doses so and our hypothesis I think is the following(here I  impelemented the one side test as we want to know if the bigger does gives higher lenght or the same):  
+  H0: M0-Ma=0  
+  Ha: M0-Ma>0  
+as M0,Ma are the means of lenght given two doses.
+### 0.5 dose versus 1.0 dose
+```{r}
+t.test(len~dose,data=ToothGrowth[ToothGrowth$dose ==0.5 | ToothGrowth$dose ==1,])
+```
+as the p-value is lower thean 0.05, so the there is siginficant difference of the length.
+### 1.0 dose versus 2.0 dose
+
+```{r}
+t.test(len~dose,data=ToothGrowth[ToothGrowth$dose ==1 | ToothGrowth$dose ==2,])
+```
+as the p-value is lower thean 0.05, so the there is siginficant difference of the length so we reject the null hypothesis.  
+
+---
+
+## 3.conslusion
+
+
+
+There's no significant differnce in the lenght of odontoblasts with the different delivery methods.  
+Ther's significance increase in the length as the dose increase. 

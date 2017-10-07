@@ -1,0 +1,20 @@
+---
+title: "quiz4"
+author: "Abdelrahman Elsehaily"
+date: "October 7, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ElemStatLearn)
+library(caret)
+data(vowel.train)
+
+data(vowel.test)
+set.seed(33833)
+rfmodel<-train(y~.,data = vowel.train,method="rf")
+```
