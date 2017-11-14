@@ -37,7 +37,6 @@ shinyServer(function(input, output) {
     filter_codes=data.frame("iso3c"=countryCodes[!is.na(countryCodes)&(countryCodes%in%lifedata$iso3c)])
     lifedata=join(filter_codes,lifedata)
     world_data <- SpatialPolygonsDataFrame(world_data,lifedata,FALSE)
-    world_data=rmapshaper::ms_simplify(world_data, keep = 0.05, keep_shapes = TRUE)
     world_data
   })
   

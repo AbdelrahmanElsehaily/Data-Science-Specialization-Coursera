@@ -30,7 +30,7 @@ shinyUI(
           mainPanel(
         div(h3("About"),"This is jsut a simple app for plotting life expectency depending on the year selected, you can also specify the region and the range of interest.")
         ,div(h3("Data"),"Data is downloaded from world bank using the 'WDI' package, it conatins the life expetency from year 1960 to 2015 for most countries all over the world.")
-        ,div(h3("How to use it"),"Just select any year and the map will show up.")  
+        ,div(h3("How to use it"),"Just select any year and the map will show up(it might take longer time if you didn't select the region).")
         )
       )
       )      
