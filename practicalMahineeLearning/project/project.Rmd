@@ -1,0 +1,79 @@
+---
+title: "practical Machine Learning Project"
+author: "Abdelrahman"
+date: "October 23, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+## Introduction
+The goal of this project is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise. This is the "classe" variable in the training set. Data is divided into training set and test set in separate files.
+## Loading the required packages 
+```{r}
+library(dplyr)
+library(caret)
+library(rpart)
+```
+## Loading the training data set
+
+```{r}
+raw_training=read.csv("pml-training.csv",na.strings = c("","NA","#DIV/0!"))
+dim(raw_training)
+```
+## Data Cleaning
+Looking on the columns of the trainng set and claculating the precentage of NA values in each of them
+```{r}
+naDF=as.data.frame(apply(raw_training,2,function(x){sum(is.na(x))}/nrow(raw_training)))
+names(naDF)=c("naPerc")
+unique(naDF$naPerc)
+```
+Dropping the column with NA percentage higher than 0.9
+```{r}
+naDF=naDF%>%tibble::rownames_to_column()%>%filter(naPerc>0.9)
+cleaned_training=raw_training%>%select(-one_of(naDF$rowname))
+
+```
+
+Dropping the first 7 columns that contains informations about the subject name and the time which may be misleading in the models
+```{r}
+cleaned_training=cleaned_training%>%select(-c(1:7))
+dim(cleaned_training)
+```
+## Modeling
+
+### Splitting the data into train/test sets
+```{r}
+inTrain <- createDataPartition(cleaned_training$classe, p=0.6, list=FALSE)
+harTraining <- cleaned_training[inTrain, ]
+harTesting <- cleaned_training[-inTrain, ]
+```
+
+### Cross Validation
+```{r}
+train_control<-trainControl(method = "cv",number = 10)
+```
+
+### Modeling with decision tree
+```{r}
+dt_model<-train(classe~.,data = harTraining,method='rpart',trControl=train_control)
+predictions<- predict(dt_model,harTesting)
+confusionMatrix(predictions,harTesting$classe)
+```
+Decision treed produced a model with accuracy 0.495 so the out of sample error is 0.51 wchic is very high to consider this model for prediction.
+
+### Modeling with Random Forrest
+```{r}
+rf_model<-train(classe~.,data = harTraining,method='rf',trControl=train_control)
+predictions<- predict(rf_model,harTesting)
+confusionMatrix(predictions,harTesting$classe)
+```
+The out of sample error here is 0.0073 which is very low so I'm gonne use this model for prediction the class of the test set
+### Modeling with 
+## Predictions of the test set
+```{r}
+raw_testing=read.csv("pml-testing.csv",na.strings = c("","NA","#DIV/0!"))
+predict(rf_model,raw_testing)
+```

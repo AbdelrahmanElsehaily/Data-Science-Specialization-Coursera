@@ -1,0 +1,33 @@
+---
+title: "Life Expectency Time Series"
+author: "Abdelrahman"
+date: "November 5, 2017"
+output:
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Life Expectency Plot
+This plot Contains the acerage life expectency on birth for over the years, the source of the data is world bank. (https://data.worldbank.org/indicator/SP.DYN.LE00.IN)
+
+```{r include=FALSE}
+library(reshape2)
+library(dplyr)
+library(plotly)
+lifedata<-read.csv(file ="life_expect.csv")
+x=melt(lifedata,id.vars = c("Country.Name","Country.Code",
+"Indicator.Name","Indicator.Code"))
+x$variable=as.numeric(as.character(substring(x$variable,first = 2)))
+grouped_data=x%>%group_by(variable)%>%summarize(lifeExpectency=mean(value,na.rm=TRUE))
+
+```
+
+```{r}
+plot_ly(data = grouped_data,type = "scatter",x=~variable,
+        y=~lifeExpectency,mode = "lines")
+
+```
+

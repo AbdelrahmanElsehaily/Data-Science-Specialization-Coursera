@@ -1,0 +1,31 @@
+---
+title: "PlotlyLearn"
+author: "Abdelrahman"
+date: "October 18, 2017"
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Bais Example
+---
+
+```{r}
+library(plotly)
+data("mtcars")
+plot_ly(mtcars,x=~wt,y =~mpg,mode="markers",color=~factor(cyl))
+
+```
+
+## continous plot
+```{r}
+plot_ly(mtcars,x=~wt,y =~mpg,mode="markers",color=~disp)
+
+```
+
+```{r}
+
+```

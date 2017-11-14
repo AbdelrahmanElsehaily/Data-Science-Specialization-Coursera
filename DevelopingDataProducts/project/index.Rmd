@@ -1,0 +1,74 @@
+---
+title: "Developing Data Products Project"
+author: "Abdelrahman"
+date: "November 13, 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Lif Expectency Map
+
+This app represents a way for plotting life expectency at birth on an interactive map using leaflet package just by selecting the year of interest you can also choose your region or the range of interest
+
+```{r include=FALSE}
+lifeExpectency<-readRDS("Developing-Data-Product-Project/lifeExpec")
+library(sp)
+library(maps)
+library(maptools)
+library(leaflet)
+library(countrycode)
+library(plyr)
+lifedata<-lifeExpectency[lifeExpectency$year==2015,]
+```
+
+
+```{r include=FALSE}
+world <- map("world", fill=TRUE, plot=FALSE)
+world_map <- map2SpatialPolygons(world, sub(":.*$", "", world$names))
+#some countries in wolrld map has differnet names from the data set so using country code is better
+country_names=countrycode(names(world_map), 'country.name',"iso3c")
+#getting only countries that exists in the data set
+world_map=world_map[!is.na(country_names)&(country_names%in%lifedata$iso3c),]
+#creating datafram for joining
+country_names=data.frame("iso3c"=country_names[!is.na(country_names)&(country_names%in%lifedata$iso3c)])
+lifedata=join(country_names,lifedata)
+world_map <- SpatialPolygonsDataFrame(world_map,lifedata,FALSE)
+bins <- c( 40, 50,55, 60, 65, 70,75,80,Inf)
+pal <- colorBin("YlOrRd", domain = lifedata$lifeExpec,bins = bins)
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g years",
+  world_map$country, world_map$lifeExpec
+) %>% lapply(htmltools::HTML)
+
+```
+
+## 2015 Life Expetency Map
+
+```{r include=TRUE,echo=TRUE,fig.height=3}
+leaflet(world_map) %>% addTiles() %>% 
+  addPolygons(fillColor = ~pal(lifeExpec),weight = 2,
+  opacity = 1,color = "white",fillOpacity = 0.7,label = labels,
+  labelOptions = labelOptions(style = list("font-weight" = "normal"),
+    textsize = "15px",direction = "auto"))%>%setView( -25,20, 2)
+
+```
+
+## Packages Used
+
+- sp  
+This package for mapping the dataframe to the polygons and creating spatialPolygons data frame
+- maps, maptools  
+For creating the polygons for the world countries.
+- countrycode  
+To get the iso3 code for countries names to use it for joining with the life expectency dataset
+- leaflet  
+for plotting the maps
+
+## Data
+The Data set is downloaded using the WDI package from World Data Bank then selected the required columns only (year, lifeExpec, country, iso3code, region)
+
+
+

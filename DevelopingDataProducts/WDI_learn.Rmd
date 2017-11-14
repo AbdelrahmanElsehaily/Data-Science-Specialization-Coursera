@@ -1,0 +1,22 @@
+---
+title: "WDI_learn"
+author: "Abdelrahman"
+date: "November 6, 2017"
+output: 
+  html_document:
+    keep_md:true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(WDI)
+library(reshape2)
+library(dplyr)
+data1 <- WDI(country="all", indicator=c("SH.XPD.PCAP","SP.DYN.LE00.IN"), start=1960, end=2017, extra=TRUE)
+lifeExpectency<-data1%>%mutate(lifeExpect=SP.DYN.LE00.IN)%>%select(iso3c,country,lifeExpect,region,year)
+lifeExpectency<-reshape(lifeExpectency,idvar = c("iso3c","country","region"),timevar = "year",direction = "wide")
+range(data1$year)
+```
